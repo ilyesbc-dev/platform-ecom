@@ -17,7 +17,7 @@ function NavBar() {
             style={{ objectFit: "contain" }}
           />
 
-          MyShop
+          DZShop
         </a>
 
 

@@ -31,7 +31,7 @@ function Footer() {
           <div className="col-lg-3 col-md-6 mb-4">
 
             <h5 className="text-uppercase mb-4">
-              Shop
+             DZ Shop
             </h5>
 
             <p>
