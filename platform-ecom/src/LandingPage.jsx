@@ -1,5 +1,5 @@
-
 import "./App.css";
+import { Link } from "react-router-dom";
 
 function LandingPage() {
   return (
@@ -21,7 +21,9 @@ function LandingPage() {
             <h1 className="display-3 fw-bold mb-4">
               Discover Your
               <br />
-              <span className="text-dark">Favorite Products</span>
+              <span className="text-dark">
+                Favorite Products
+              </span>
             </h1>
 
             <p className="lead text-secondary mb-4">
@@ -33,15 +35,23 @@ function LandingPage() {
             {/* Buttons */}
             <div className="d-flex gap-3 justify-content-center justify-content-md-start">
 
-              <button className="btn btn-dark btn-lg px-4 shadow">
+              {/* Go to Products */}
+              <Link
+                to="/produits"
+                className="btn btn-dark btn-lg px-4 shadow"
+              >
                 Discover Our Products
                 <i className="bi bi-arrow-right ms-2"></i>
-              </button>
+              </Link>
 
-              <button className="btn btn-outline-dark btn-lg px-4">
+              {/* Go to Products */}
+              <Link
+                to="/produits"
+                className="btn btn-outline-dark btn-lg px-4"
+              >
                 <i className="bi bi-cart3 me-2"></i>
                 Shop Now
-              </button>
+              </Link>
 
             </div>
 
@@ -73,7 +83,6 @@ function LandingPage() {
 
           </div>
 
-
           {/* IMAGE */}
           <div className="col-md-6 text-center mt-5 mt-md-0">
 
@@ -101,4 +110,3 @@ function LandingPage() {
 }
 
 export default LandingPage;
-
