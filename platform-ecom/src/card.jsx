@@ -6,11 +6,11 @@ function Card({ produit }) {
 
       <img
         src={produit.img}
-        alt={produit.nom}
         className="card-img-top"
+        alt={produit.nom}
         style={{
           height: "250px",
-          objectFit: "cover",
+          objectFit: "cover"
         }}
       />
 
@@ -20,22 +20,27 @@ function Card({ produit }) {
           {produit.nom}
         </h5>
 
-        <p className="text-muted">
+        <p className="card-text text-muted">
           {produit.description}
         </p>
 
-        <h5 className="mt-auto">
+        <p className="fw-bold">
           {produit.prix} DA
-        </h5>
+        </p>
+
+        <p className="small text-secondary">
+          {produit.categorie}
+        </p>
 
         <Link
           to={`/produit/${produit.id}`}
-          className="btn btn-primary mt-3"
+          className="btn btn-primary mt-auto"
         >
-          Voir les détails
+          Voir le produit
         </Link>
 
       </div>
+
     </div>
   );
 }

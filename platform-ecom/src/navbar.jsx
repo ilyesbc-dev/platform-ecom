@@ -62,9 +62,9 @@ function NavBar() {
 
             {/* Blog */}
             <li className="nav-item">
-              <Link className="nav-link text-white" to="/blog">
-                Blog
-              </Link>
+             <Link to="/signup" className="btn btn-primary ms-2">
+  Sign Up
+</Link>
             </li>
 
             {/* Contact */}

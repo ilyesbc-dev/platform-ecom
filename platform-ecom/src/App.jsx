@@ -6,7 +6,9 @@ import Produits from "./produit";
 import ProduitDetails from "./ProduitDetails";
 import Panier, { PanierProvider } from "./panier";
 import Footer from "./footer";
-
+import Contact from "./contact";
+import Connexion from "./connection";
+import Signup from "./Signup";
 function App() {
   return (
     <BrowserRouter>
@@ -15,12 +17,13 @@ function App() {
 
         <Routes>
           <Route path="/" element={<LandingPage />} />
-
+          <Route path="/contact" element={<Contact />} />
           <Route
             path="/produits"
             element={<Produits />}
           />
-
+<Route path="/connexion" element={<Connexion />} />
+<Route path="/signup" element={<Signup />} />
           <Route
             path="/produit/:id"
             element={<ProduitDetails />}
