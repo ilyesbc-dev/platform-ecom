@@ -1,112 +1,137 @@
-import "./App.css";
+
 import { Link } from "react-router-dom";
 
 function LandingPage() {
   return (
     <section
-      className="landing-section bg-light"
-      style={{ marginTop: "56px" }}
+      className="bg-light"
+      style={{
+        marginTop: "70px",
+        minHeight: "calc(100vh - 70px)",
+        overflow: "hidden",
+      }}
     >
       <div className="container py-5">
-        <div className="row align-items-center min-vh-75">
-
+        <div
+          className="row align-items-center"
+          style={{ minHeight: "80vh" }}
+        >
           {/* TEXT */}
-          <div className="col-md-6 text-center text-md-start">
+          <div className="col-lg-6 text-center text-lg-start">
 
-            {/* Small Badge */}
-            <span className="badge bg-dark px-3 py-2 mb-3">
-              🇩🇿 Welcome to My DZ Shop
+            {/* Badge */}
+            <span className="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-4">
+              🇩🇿 Welcome to DZECORM
             </span>
 
-            <h1 className="display-3 fw-bold mb-4">
-              Discover Your
-              <br />
-              <span className="text-dark">
-                Favorite Products
-              </span>
+            {/* Title */}
+            <h1 className="display-3 fw-bold lh-sm mb-4">
+              Discover
+              <span className="text-primary"> Products </span>
+              You'll Love.
             </h1>
 
-            <p className="lead text-secondary mb-4">
-              Discover quality products at great prices.
-              <br />
-              Shop easily, quickly, and safely with My DZ Shop.
+            {/* Description */}
+            <p
+              className="lead text-secondary mb-4"
+              style={{ maxWidth: "550px" }}
+            >
+              Quality products, great prices, and a simple shopping
+              experience. Everything you need, all in one place.
             </p>
 
             {/* Buttons */}
-            <div className="d-flex gap-3 justify-content-center justify-content-md-start">
-
-              {/* Go to Products */}
+            <div className="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
               <Link
                 to="/produits"
-                className="btn btn-dark btn-lg px-4 shadow"
+                className="btn btn-primary btn-lg rounded-pill px-4 fw-semibold shadow-sm"
               >
-                Discover Our Products
+                Explore Products
                 <i className="bi bi-arrow-right ms-2"></i>
               </Link>
 
-              {/* Go to Products */}
               <Link
                 to="/produits"
-                className="btn btn-outline-dark btn-lg px-4"
+                className="btn btn-outline-dark btn-lg rounded-pill px-4"
               >
-                <i className="bi bi-cart3 me-2"></i>
+                <i className="bi bi-bag me-2"></i>
                 Shop Now
               </Link>
-
             </div>
 
-            {/* Small Features */}
-            <div className="d-flex gap-4 mt-5 justify-content-center justify-content-md-start">
+            <div className="row mt-5 g-3">
+              <div className="col-4">
+                <i className="bi bi-truck text-primary fs-4"></i>
 
-              <div>
-                <i className="bi bi-truck fs-4"></i>
-                <small className="d-block text-secondary">
+                <strong className="d-block small mt-1">
                   Fast Delivery
+                </strong>
+
+                <small className="text-secondary">
+                  Quick shipping
                 </small>
               </div>
 
-              <div>
-                <i className="bi bi-shield-check fs-4"></i>
-                <small className="d-block text-secondary">
-                  Secure Shopping
+              <div className="col-4">
+                <i className="bi bi-shield-check text-primary fs-4"></i>
+
+                <strong className="d-block small mt-1">
+                  Secure
+                </strong>
+
+                <small className="text-secondary">
+                  Safe shopping
                 </small>
               </div>
 
-              <div>
-                <i className="bi bi-star fs-4"></i>
-                <small className="d-block text-secondary">
-                  Quality Products
+              <div className="col-4">
+                <i className="bi bi-star-fill text-primary fs-4"></i>
+
+                <strong className="d-block small mt-1">
+                  Quality
+                </strong>
+
+                <small className="text-secondary">
+                  Trusted products
                 </small>
               </div>
-
             </div>
-
           </div>
-
-          {/* IMAGE */}
-          <div className="col-md-6 text-center mt-5 mt-md-0">
-
-            <div className="hero-image-wrapper">
-
-              {/* Floating Circle */}
-              <div className="floating-badge">
-                <i className="bi bi-bag-heart"></i>
-              </div>
-
+          <div className="col-lg-6 mt-5 mt-lg-0">
+            <div className="text-center">
               <img
                 src="https://images.unsplash.com/photo-1441986300917-64674bd600d8"
-                className="img-fluid rounded-4 shadow-lg floating-img"
-                alt="My DZ Shop"
+                className="img-fluid rounded-4 shadow-lg"
+                style={{
+                  maxHeight: "500px",
+                  width: "100%",
+                  objectFit: "cover",
+                  animation: "floatingImage 4s ease-in-out infinite",
+                }}
+                alt="DZShop"
               />
-
             </div>
-
           </div>
-
         </div>
       </div>
+
+     
+      <style>
+        {`
+          @keyframes floatingImage {
+            0%, 100% {
+              transform: translateY(0);
+            }
+
+            50% {
+              transform: translateY(-15px);
+            }
+          }
+        `}
+      </style>
     </section>
   );
 }
 
 export default LandingPage;
+
