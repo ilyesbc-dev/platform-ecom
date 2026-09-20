@@ -1,96 +1,99 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { apiFetch } from "./api";
 import { usePanier } from "./panier";
-import { produits } from "./produits";
 
 function ProduitDetails() {
   const { id } = useParams();
 
+  const [produit, setProduit] = useState(null);
+  const [chargement, setChargement] = useState(true);
+
   const { ajouterAuPanier } = usePanier();
 
-  const produit = produits.find(
-    (p) => p.id === Number(id)
-  );
+  useEffect(() => {
+    apiFetch("/api/products/" + id)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setProduit(data);
+        setChargement(false);
+      })
+      .catch(() => {
+        setChargement(false);
+      });
+  }, [id]);
+
+  if (chargement) {
+    return (
+      <p className="container text-center mt-5 pt-5">
+        Chargement...
+      </p>
+    );
+  }
 
   if (!produit) {
     return (
       <div className="container text-center mt-5 pt-5">
-
         <h2>Produit introuvable</h2>
 
-        <Link
-          to="/produits"
-          className="btn btn-primary mt-3"
-        >
+        <Link to="/produits" className="btn btn-primary mt-3">
           Retour aux produits
         </Link>
-
       </div>
     );
   }
 
-  const handleAjouter = () => {
+  function ajouter() {
     ajouterAuPanier(produit);
-  };
+  }
 
   return (
-    <div className="container my-5 pt-5">
-
+    <div className="container mt-5 pt-5">
       <div className="row align-items-center">
 
-        {/* IMAGE */}
-        <div className="col-md-6">
-
+        <div className="col-md-6 text-center">
           <img
-            src={produit.img}
+            src={produit.image}
             alt={produit.nom}
-            className="img-fluid rounded shadow"
+            className="img-fluid"
             style={{
-              width: "100%",
-              height: "450px",
-              objectFit: "cover"
+              maxHeight: "500px",
+              objectFit: "contain",
             }}
           />
-
         </div>
 
-        {/* INFORMATIONS */}
-        <div className="col-md-6 mt-4 mt-md-0">
-
+        <div className="col-md-6">
           <h1>{produit.nom}</h1>
 
-          <p className="text-muted mt-3">
+          <p className="text-secondary">
             {produit.description}
           </p>
 
-          <p className="mt-3">
-            <strong>Catégorie :</strong>{" "}
-            {produit.categorie}
-          </p>
-
-          <h2 className="mt-4">
+          <h3 className="fw-bold">
             {produit.prix} DA
-          </h2>
+          </h3>
 
-          <button
-            className="btn btn-primary btn-lg mt-3"
-            onClick={handleAjouter}
-          >
-            🛒 Ajouter au panier
-          </button>
-
-          <br />
+          <p>
+            Stock : {produit.stock}
+          </p>
 
           <Link
             to="/produits"
-            className="btn btn-outline-secondary mt-3"
+            className="btn btn-secondary me-2"
           >
-            ← Retour aux produits
+            Retour
           </Link>
 
+          <button
+            className="btn btn-primary"
+            onClick={ajouter}
+          >
+            Ajouter au panier
+          </button>
         </div>
 
       </div>
-
     </div>
   );
 }

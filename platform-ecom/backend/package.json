@@ -1,19 +1,16 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "ecom backend",
-  "main": "server.js",
   "type": "module",
   "scripts": {
+    "start": "node server.js",
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "seed": "node seed.js"
   },
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
+    "cors": "...",
+    "dotenv": "...",
+    "express": "...",
+    "mongoose": "..."
   }
 }

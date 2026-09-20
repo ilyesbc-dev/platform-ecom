@@ -1,7 +1,22 @@
-
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function LandingPage() {
+  const [recherche, setRecherche] = useState("");
+  const navigate = useNavigate();
+
+  function chercher(e) {
+    e.preventDefault();
+
+    const terme = recherche.trim();
+
+    if (terme) {
+      navigate(`/produits?search=${encodeURIComponent(terme)}`);
+    } else {
+      navigate("/produits");
+    }
+  }
+
   return (
     <section
       className="bg-light"
@@ -59,6 +74,7 @@ function LandingPage() {
               </Link>
             </div>
 
+            {/* Features */}
             <div className="row mt-5 g-3">
               <div className="col-4">
                 <i className="bi bi-truck text-primary fs-4"></i>
@@ -97,7 +113,39 @@ function LandingPage() {
               </div>
             </div>
           </div>
+
+          {/* IMAGE + SEARCH */}
           <div className="col-lg-6 mt-5 mt-lg-0">
+
+            {/* SEARCH BAR ABOVE IMAGE */}
+            <form
+              onSubmit={chercher}
+              className="mb-4 mx-auto"
+              style={{ maxWidth: "550px" }}
+            >
+              <div className="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
+                <span className="input-group-text bg-white border-0 ps-4">
+                  <i className="bi bi-search text-primary"></i>
+                </span>
+
+                <input
+                  type="text"
+                  className="form-control bg-white border-0"
+                  placeholder="Search for a product..."
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                />
+
+                <button
+                  type="submit"
+                  className="btn btn-primary px-4"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+
+            {/* YOUR ORIGINAL IMAGE */}
             <div className="text-center">
               <img
                 src="https://images.unsplash.com/photo-1441986300917-64674bd600d8"
@@ -111,11 +159,11 @@ function LandingPage() {
                 alt="DZShop"
               />
             </div>
+
           </div>
         </div>
       </div>
 
-     
       <style>
         {`
           @keyframes floatingImage {
@@ -134,4 +182,3 @@ function LandingPage() {
 }
 
 export default LandingPage;
-
