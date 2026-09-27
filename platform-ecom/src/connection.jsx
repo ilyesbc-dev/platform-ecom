@@ -1,14 +1,20 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 function Connexion() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [erreur, setErreur] = useState("");
+  const [envoi, setEnvoi] = useState(false);
+
+  const destination = (location.state && location.state.from) || "/";
 
   const handleChange = (e) => {
     setFormData({
@@ -17,11 +23,19 @@ function Connexion() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErreur("");
+    setEnvoi(true);
 
-    alert("Connexion réussie !");
-    navigate("/");
+    try {
+      // Vrai appel à l'API : le compte est vérifié dans MongoDB
+      await login(formData.email, formData.password);
+      navigate(destination, { replace: true });
+    } catch (err) {
+      setErreur(err.message);
+    }
+    setEnvoi(false);
   };
 
   return (
@@ -109,6 +123,10 @@ function Connexion() {
                   </p>
                 </div>
 
+                {erreur && (
+                  <div className="alert alert-danger">{erreur}</div>
+                )}
+
                 <form onSubmit={handleSubmit}>
 
                   {/* Email */}
@@ -182,6 +200,7 @@ function Connexion() {
                   <button
                     type="submit"
                     className="btn btn-primary btn-lg w-100 fw-semibold"
+                    disabled={envoi}
                     style={{
                       borderRadius: "12px",
                       padding: "13px",
@@ -192,7 +211,7 @@ function Connexion() {
                         "0 8px 20px rgba(13, 110, 253, 0.25)",
                     }}
                   >
-                    Se connecter
+                    {envoi ? "Connexion..." : "Se connecter"}
                   </button>
                 </form>
 
@@ -228,6 +247,3 @@ function Connexion() {
 }
 
 export default Connexion;
-
-
-

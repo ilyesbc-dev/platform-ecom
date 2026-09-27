@@ -1,5 +1,5 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const PanierContext = createContext();
 
@@ -214,9 +214,15 @@ export default function Panier() {
               Total : {total} DA
             </h3>
           </div>
+
+          <Link
+            className="btn btn-success w-100 mt-3"
+            to="/checkout"
+          >
+            Passer la commande
+          </Link>
         </>
       )}
     </div>
   );
 }
-

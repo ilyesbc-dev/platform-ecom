@@ -1,9 +1,10 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 function Signup() {
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const [formData, setFormData] = useState({
     nom: "",
@@ -11,6 +12,8 @@ function Signup() {
     password: "",
     confirmPassword: "",
   });
+  const [erreur, setErreur] = useState("");
+  const [envoi, setEnvoi] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -19,16 +22,29 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErreur("");
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas.");
+    if (formData.password.length < 6) {
+      setErreur("Le mot de passe doit faire au moins 6 caractères.");
       return;
     }
 
-    alert("Compte créé avec succès !");
-    navigate("/connexion");
+    if (formData.password !== formData.confirmPassword) {
+      setErreur("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    setEnvoi(true);
+    try {
+      // Vrai appel à l'API : le compte est créé dans MongoDB, et on est connecté tout de suite
+      await register(formData.nom, formData.email, formData.password);
+      navigate("/");
+    } catch (err) {
+      setErreur(err.message);
+    }
+    setEnvoi(false);
   };
 
   return (
@@ -114,6 +130,10 @@ function Signup() {
                     Rejoignez <strong>ecorm</strong> gratuitement
                   </p>
                 </div>
+
+                {erreur && (
+                  <div className="alert alert-danger">{erreur}</div>
+                )}
 
                 <form onSubmit={handleSubmit}>
 
@@ -207,6 +227,7 @@ function Signup() {
                   <button
                     type="submit"
                     className="btn btn-primary btn-lg w-100 fw-semibold"
+                    disabled={envoi}
                     style={{
                       borderRadius: "12px",
                       padding: "13px",
@@ -217,7 +238,7 @@ function Signup() {
                         "0 8px 20px rgba(13, 110, 253, 0.25)",
                     }}
                   >
-                    Créer mon compte
+                    {envoi ? "Création..." : "Créer mon compte"}
                   </button>
                 </form>
 
@@ -253,4 +274,3 @@ function Signup() {
 }
 
 export default Signup;
-

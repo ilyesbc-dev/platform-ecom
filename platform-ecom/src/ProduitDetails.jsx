@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { apiFetch } from "./api";
@@ -13,12 +14,20 @@ function ProduitDetails() {
 
   useEffect(() => {
     apiFetch("/api/products/" + id)
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Produit introuvable");
+        }
+
+        return res.json();
+      })
       .then((data) => {
         setProduit(data);
         setChargement(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(err);
+        setProduit(null);
         setChargement(false);
       });
   }, [id]);
@@ -36,7 +45,10 @@ function ProduitDetails() {
       <div className="container text-center mt-5 pt-5">
         <h2>Produit introuvable</h2>
 
-        <Link to="/produits" className="btn btn-primary mt-3">
+        <Link
+          to="/produits"
+          className="btn btn-primary mt-3"
+        >
           Retour aux produits
         </Link>
       </div>
@@ -49,9 +61,12 @@ function ProduitDetails() {
 
   return (
     <div className="container mt-5 pt-5">
+
       <div className="row align-items-center">
 
+        {/* IMAGE */}
         <div className="col-md-6 text-center">
+
           <img
             src={produit.image}
             alt={produit.nom}
@@ -61,9 +76,12 @@ function ProduitDetails() {
               objectFit: "contain",
             }}
           />
+
         </div>
 
+        {/* DETAILS */}
         <div className="col-md-6">
+
           <h1>{produit.nom}</h1>
 
           <p className="text-secondary">
@@ -88,14 +106,20 @@ function ProduitDetails() {
           <button
             className="btn btn-primary"
             onClick={ajouter}
+            disabled={produit.stock <= 0}
           >
-            Ajouter au panier
+            {produit.stock <= 0
+              ? "Rupture de stock"
+              : "Ajouter au panier"}
           </button>
+
         </div>
 
       </div>
+
     </div>
   );
 }
 
 export default ProduitDetails;
+

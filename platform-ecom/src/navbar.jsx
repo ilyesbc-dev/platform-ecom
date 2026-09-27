@@ -1,9 +1,10 @@
-
 import { Link } from "react-router-dom";
 import { usePanier } from "./panier";
+import { useAuth } from "./AuthContext";
 
 function NavBar() {
   const { panier } = usePanier();
+  const { user, logout } = useAuth();
 
  
   const nombreProduits = panier.reduce(
@@ -105,18 +106,36 @@ function NavBar() {
               </Link>
             </li>
 
-            {/* Sign Up */}
-            <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
-              <Link
-                to="/signup"
-                className="btn btn-primary px-4 rounded-pill fw-semibold"
-                style={{
-                  boxShadow: "0 4px 12px rgba(13, 110, 253, 0.3)",
-                }}
-              >
-                Sign Up
-              </Link>
-            </li>
+            {/* Connexion / compte */}
+            {user ? (
+              <>
+                <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
+                  <span className="nav-link text-white px-3">
+                    👤 {user.nom}
+                  </span>
+                </li>
+                <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
+                  <button
+                    className="btn btn-outline-light px-4 rounded-pill fw-semibold"
+                    onClick={logout}
+                  >
+                    Déconnexion
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
+                <Link
+                  to="/signup"
+                  className="btn btn-primary px-4 rounded-pill fw-semibold"
+                  style={{
+                    boxShadow: "0 4px 12px rgba(13, 110, 253, 0.3)",
+                  }}
+                >
+                  Sign Up
+                </Link>
+              </li>
+            )}
 
             {/* Panier */}
             <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
@@ -147,4 +166,3 @@ function NavBar() {
 }
 
 export default NavBar;
-

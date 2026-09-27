@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Card from "./card";
@@ -15,9 +16,9 @@ function Produits() {
   const [recherche, setRecherche] = useState(rechercheURL);
   const [page, setPage] = useState(pageURL);
 
-  // Nombre de produits par page
   const produitsParPage = 4;
 
+  // Récupérer les produits depuis le backend
   useEffect(() => {
     apiFetch("/api/products")
       .then(lireJson)
@@ -25,18 +26,20 @@ function Produits() {
         setProduits(data);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Erreur:", err);
       })
       .finally(() => {
         setChargement(false);
       });
   }, []);
 
+  // Synchroniser avec l'URL
   useEffect(() => {
     setRecherche(rechercheURL);
     setPage(pageURL);
   }, [rechercheURL, pageURL]);
 
+  // Recherche
   function chercher(e) {
     e.preventDefault();
 
@@ -55,28 +58,32 @@ function Produits() {
   }
 
   // Filtrer les produits
- const produitsFiltres = produits.filter((produit) => {
-  const terme = recherche.toLowerCase().trim();
+  const produitsFiltres = produits.filter((produit) => {
+    const terme = recherche.toLowerCase().trim();
 
-  // Don't filter until 3 letters
-  if (terme.length < 3) {
-    return true;
-  }
+    // Pas de filtre avant 3 caractères
+    if (terme.length < 3) {
+      return true;
+    }
 
-  return (
-    produit.nom.toLowerCase().includes(terme) ||
-    produit.description.toLowerCase().includes(terme) ||
-    produit.categorie.toLowerCase().includes(terme)
-  );
-});
+    return (
+      produit.nom?.toLowerCase().includes(terme) ||
+      produit.description?.toLowerCase().includes(terme) ||
+      produit.categorie?.toLowerCase().includes(terme)
+    );
+  });
 
   // Nombre total de pages
   const totalPages = Math.ceil(
     produitsFiltres.length / produitsParPage
   );
 
+  // Éviter une page invalide
+  const pageActuelle =
+    totalPages > 0 ? Math.min(page, totalPages) : 1;
+
   // Produits de la page actuelle
-  const indexDebut = (page - 1) * produitsParPage;
+  const indexDebut = (pageActuelle - 1) * produitsParPage;
   const indexFin = indexDebut + produitsParPage;
 
   const produitsAffiches = produitsFiltres.slice(
@@ -84,11 +91,10 @@ function Produits() {
     indexFin
   );
 
+  // Changer de page
   function allerPage(numeroPage) {
     setSearchParams({
-      ...(recherche
-        ? { search: recherche }
-        : {}),
+      ...(recherche ? { search: recherche } : {}),
       page: numeroPage.toString(),
     });
   }
@@ -153,18 +159,20 @@ function Produits() {
       )}
 
       {/* PRODUCTS */}
-      <div className="row">
+      {!chargement && produitsFiltres.length > 0 && (
+        <div className="row">
 
-        {produitsAffiches.map((produit) => (
-          <div
-            className="col-md-6 col-lg-6 mb-4"
-            key={produit._id}
-          >
-            <Card produit={produit} />
-          </div>
-        ))}
+          {produitsAffiches.map((produit) => (
+            <div
+              className="col-md-6 col-lg-6 mb-4"
+              key={produit._id}
+            >
+              <Card produit={produit} />
+            </div>
+          ))}
 
-      </div>
+        </div>
+      )}
 
       {/* PAGINATION */}
       {!chargement && totalPages > 1 && (
@@ -173,8 +181,8 @@ function Produits() {
           {/* PREVIOUS */}
           <button
             className="btn btn-outline-primary rounded-pill px-4"
-            disabled={page === 1}
-            onClick={() => allerPage(page - 1)}
+            disabled={pageActuelle === 1}
+            onClick={() => allerPage(pageActuelle - 1)}
           >
             <i className="bi bi-arrow-left me-2"></i>
             Previous
@@ -188,7 +196,7 @@ function Produits() {
             <button
               key={numeroPage}
               className={
-                page === numeroPage
+                pageActuelle === numeroPage
                   ? "btn btn-primary rounded-circle"
                   : "btn btn-outline-primary rounded-circle"
               }
@@ -205,8 +213,8 @@ function Produits() {
           {/* NEXT */}
           <button
             className="btn btn-outline-primary rounded-pill px-4"
-            disabled={page === totalPages}
-            onClick={() => allerPage(page + 1)}
+            disabled={pageActuelle === totalPages}
+            onClick={() => allerPage(pageActuelle + 1)}
           >
             Next
             <i className="bi bi-arrow-right ms-2"></i>

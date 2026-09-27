@@ -9,9 +9,13 @@ import Footer from "./footer";
 import Contact from "./contact";
 import Connexion from "./connection";
 import Signup from "./Signup";
+import CheckoutPage from "./CheckoutPage";
+import PrivateRoute from "./PrivateRoute";
+import { AuthProvider } from "./AuthContext";
 function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <PanierProvider>
         <NavBar />
 
@@ -33,10 +37,21 @@ function App() {
             path="/panier"
             element={<Panier />}
           />
+
+          {/* protégée : il faut être connecté */}
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute>
+                <CheckoutPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
 
         <Footer />
       </PanierProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
