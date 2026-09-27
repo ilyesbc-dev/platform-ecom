@@ -12,6 +12,7 @@ import Signup from "./Signup";
 import CheckoutPage from "./CheckoutPage";
 import PrivateRoute from "./PrivateRoute";
 import { AuthProvider } from "./AuthContext";
+import "bootstrap-icons/font/bootstrap-icons.css";
 function App() {
   return (
     <BrowserRouter>
