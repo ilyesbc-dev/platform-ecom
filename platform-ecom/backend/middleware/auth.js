@@ -1,34 +1,45 @@
-import jwt from 'jsonwebtoken'
-import User from '../models/User.js'
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-// protect = « QUI ES-TU ? »   →  401 si on ne sait pas
 export async function protect(req, res, next) {
-  const entete = req.headers.authorization || ''
-  const token = entete.startsWith('Bearer ') ? entete.slice(7) : null
-
-  if (!token) {
-    return res.status(401).json({ message: 'Connexion requise' })
-  }
-
   try {
-    const contenu = jwt.verify(token, process.env.JWT_SECRET)
+    const authHeader = req.headers.authorization;
 
-    const user = await User.findById(contenu.id)
-    if (!user) {
-      return res.status(401).json({ message: 'Compte introuvable' })
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        message: "Authentification requise",
+      });
     }
 
-    req.user = user
-    next()
-  } catch (erreur) {
-    res.status(401).json({ message: 'Token invalide ou expiré' })
-  }
-}
+    const token = authHeader.split(" ")[1];
 
-// isAdmin = « AS-TU LE DROIT ? »   →  403 si non. À placer APRÈS protect.
-export function isAdmin(req, res, next) {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: "Accès réservé à l'admin" })
+    if (!token) {
+      return res.status(401).json({
+        message: "Token manquant",
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Utilisateur introuvable",
+      });
+    }
+
+    req.user = user;
+
+    next();
+  } catch (erreur) {
+    console.error("Erreur authentification :", erreur.message);
+
+    return res.status(401).json({
+      message: "Token invalide ou expiré",
+    });
   }
-  next()
 }

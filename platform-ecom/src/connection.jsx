@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 function Connexion() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, loginGoogle } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -36,6 +37,17 @@ function Connexion() {
       setErreur(err.message);
     }
     setEnvoi(false);
+  };
+
+  // Appelée par le bouton Google avec le jeton reçu de Google
+  const connexionGoogle = async (credential) => {
+    setErreur("");
+    try {
+      await loginGoogle(credential);
+      navigate(destination, { replace: true });
+    } catch (err) {
+      setErreur(err.message);
+    }
   };
 
   return (
@@ -214,6 +226,9 @@ function Connexion() {
                     {envoi ? "Connexion..." : "Se connecter"}
                   </button>
                 </form>
+
+                <div className="text-center text-muted my-3">— ou —</div>
+                <GoogleSignInButton onCredential={connexionGoogle} />
 
                 {/* Signup */}
                 <div className="text-center mt-4">
