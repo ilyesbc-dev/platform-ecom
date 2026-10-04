@@ -13,32 +13,38 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // select: false = la requête NE renvoie PAS le mot de passe, sauf si on le demande exprès
+    // Obligatoire seulement pour les comptes "local" : un compte Google n'a pas de mot de passe
     password: {
       type: String,
-      required: [true, 'Le mot de passe est obligatoire'],
+      required: function () {
+        return this.provider === 'local'
+      },
       minlength: [6, 'Le mot de passe doit faire au moins 6 caractères'],
       select: false,
     },
 
-    // "client" par défaut. On ne devient admin que dans la base (séance suivante)
+    provider: { type: String, enum: ['local', 'google'], default: 'local' },
+    googleId: { type: String, default: null },
+
+    // "client" par défaut. On ne devient admin que dans la base (cette étape)
     role: { type: String, enum: ['client', 'admin'], default: 'client' },
+
+    // Un admin peut bloquer un compte : un client bloqué ne peut plus se connecter
+    status: { type: String, enum: ['actif', 'bloque'], default: 'actif' },
   },
   { timestamps: true }
 )
 
-// AVANT chaque sauvegarde : on remplace le mot de passe par son "hash"
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return
+  if (!this.isModified('password') || !this.password) return
   this.password = await bcrypt.hash(this.password, 10)
 })
 
-// Compare le mot de passe tapé avec l'empreinte enregistrée
 userSchema.methods.verifierMotDePasse = function (motDePasse) {
+  if (!this.password) return false
   return bcrypt.compare(motDePasse, this.password)
 }
 
-// Ce qu'on a le droit de renvoyer au navigateur : JAMAIS le mot de passe
 userSchema.methods.versPublic = function () {
   return { id: this._id, nom: this.nom, email: this.email, role: this.role }
 }
