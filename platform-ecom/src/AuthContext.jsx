@@ -50,17 +50,6 @@ export function AuthProvider({ children }) {
     return data.user
   }
 
-  // Connexion avec Google : on envoie à l'API le jeton reçu de Google, elle le fait vérifier
-  async function loginGoogle(credential) {
-    const reponse = await apiFetch('/api/auth/google', {
-      method: 'POST',
-      body: JSON.stringify({ credential: credential }),
-    })
-    const data = await lireJson(reponse)
-    sauvegarder(data)
-    return data.user
-  }
-
   async function register(nom, email, password) {
     const reponse = await apiFetch('/api/auth/register', {
       method: 'POST',
@@ -72,7 +61,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, loginGoogle, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

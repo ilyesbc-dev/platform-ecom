@@ -43,4 +43,4 @@ const PORT = process.env.PORT || 5000
 
 app.listen(PORT, function () {
   console.log('Serveur sur http://localhost:' + PORT)
-})
+})cd platform-ecom/backend
