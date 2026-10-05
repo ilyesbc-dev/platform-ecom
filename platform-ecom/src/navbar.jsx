@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { usePanier } from "./panier";
 import { useAuth } from "./AuthContext";
@@ -6,7 +7,6 @@ function NavBar() {
   const { panier } = usePanier();
   const { user, logout } = useAuth();
 
- 
   const nombreProduits = panier.reduce(
     (total, produit) => total + produit.quantite,
     0
@@ -22,6 +22,7 @@ function NavBar() {
       }}
     >
       <div className="container py-2">
+
         {/* Logo */}
         <Link
           className="navbar-brand text-white d-flex align-items-center gap-2 fw-bold"
@@ -69,44 +70,26 @@ function NavBar() {
 
             {/* Home */}
             <li className="nav-item">
-              <Link
-                className="nav-link text-white px-3"
-                to="/"
-                style={{
-                  transition: "0.3s",
-                }}
-              >
+              <Link className="nav-link text-white px-3" to="/">
                 Home
               </Link>
             </li>
 
             {/* Products */}
             <li className="nav-item">
-              <Link
-                className="nav-link text-white px-3"
-                to="/produits"
-                style={{
-                  transition: "0.3s",
-                }}
-              >
+              <Link className="nav-link text-white px-3" to="/produits">
                 Products
               </Link>
             </li>
 
             {/* Contact */}
             <li className="nav-item">
-              <Link
-                className="nav-link text-white px-3"
-                to="/contact"
-                style={{
-                  transition: "0.3s",
-                }}
-              >
+              <Link className="nav-link text-white px-3" to="/contact">
                 Contact
               </Link>
             </li>
 
-            {/* Connexion / compte */}
+            {/* User */}
             {user ? (
               <>
                 <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
@@ -114,6 +97,20 @@ function NavBar() {
                     👤 {user.nom}
                   </span>
                 </li>
+
+                {/* Admin */}
+                {user.role === "admin" && (
+                  <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
+                    <Link
+                      to="/admin"
+                      className="btn btn-outline-light px-4 rounded-pill fw-semibold"
+                    >
+                      Admin
+                    </Link>
+                  </li>
+                )}
+
+                {/* Logout */}
                 <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
                   <button
                     className="btn btn-outline-light px-4 rounded-pill fw-semibold"
@@ -142,12 +139,8 @@ function NavBar() {
               <Link
                 to="/panier"
                 className="btn btn-light rounded-pill px-3 d-flex align-items-center gap-2 fw-semibold"
-                style={{
-                  transition: "0.3s",
-                }}
               >
                 <i className="bi bi-cart3"></i>
-
                 <span>Panier</span>
 
                 {nombreProduits > 0 && (
@@ -166,3 +159,5 @@ function NavBar() {
 }
 
 export default NavBar;
+
+

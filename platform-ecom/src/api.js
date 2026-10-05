@@ -1,4 +1,3 @@
-
 // Adresse de l'API
 export const API_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:5000'
@@ -16,8 +15,10 @@ export async function apiFetch(chemin, options) {
     headers.Authorization = 'Bearer ' + token
   }
 
-  // Si on envoie des données, préciser qu'elles sont en JSON
-  if (opts.body) {
+  // On précise "JSON" seulement si le corps est du texte (JSON.stringify(...)).
+  // Un FormData (envoi de photo, espace admin) ne doit JAMAIS avoir ce Content-Type :
+  // le navigateur doit fixer lui-même l'en-tête "multipart/form-data" avec sa frontière.
+  if (opts.body && typeof opts.body === 'string') {
     headers['Content-Type'] = 'application/json'
   }
 
@@ -58,4 +59,3 @@ export async function lireJson(reponse) {
 
   return data
 }
-
