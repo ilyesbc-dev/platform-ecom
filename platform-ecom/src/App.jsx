@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import NavBar from "./navbar";
@@ -11,135 +10,72 @@ import Contact from "./contact";
 import Connexion from "./connection";
 import Signup from "./Signup";
 import CheckoutPage from "./CheckoutPage";
-
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
-
 import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminProducts from "./admin/AdminProducts";
 import AdminOrders from "./admin/AdminOrders";
 import AdminUsers from "./admin/AdminUsers";
-
 import { AuthProvider } from "./AuthContext";
-
 import "bootstrap-icons/font/bootstrap-icons.css";
-
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <PanierProvider>
+      <PanierProvider>
+        <NavBar />
 
-          {/* Navigation */}
-          <NavBar />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/produits"
+            element={<Produits />}
+          />
+<Route path="/connexion" element={<Connexion />} />
+<Route path="/signup" element={<Signup />} />
+          <Route
+            path="/produit/:id"
+            element={<ProduitDetails />}
+          />
 
-          <Routes>
-            {/* ==================== PUBLIC ==================== */}
+          <Route
+            path="/panier"
+            element={<Panier />}
+          />
 
-            {/* Home */}
-            <Route
-              path="/"
-              element={<LandingPage />}
-            />
+          {/* protégée : il faut être connecté */}
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute>
+                <CheckoutPage />
+              </PrivateRoute>
+            }
+          />
 
-            {/* Contact */}
-            <Route
-              path="/contact"
-              element={<Contact />}
-            />
+          {/* Espace admin : protégé, réservé au rôle "admin" */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="produits" element={<AdminProducts />} />
+            <Route path="commandes" element={<AdminOrders />} />
+            <Route path="utilisateurs" element={<AdminUsers />} />
+          </Route>
+        </Routes>
 
-            {/* Products */}
-            <Route
-              path="/produits"
-              element={<Produits />}
-            />
-
-            {/* Product details */}
-            <Route
-              path="/produit/:id"
-              element={<ProduitDetails />}
-            />
-
-            {/* Cart */}
-            <Route
-              path="/panier"
-              element={<Panier />}
-            />
-
-            {/* Login */}
-            <Route
-              path="/connexion"
-              element={<Connexion />}
-            />
-
-            {/* Signup */}
-            <Route
-              path="/signup"
-              element={<Signup />}
-            />
-
-            {/* ==================== CHECKOUT ==================== */}
-
-            {/* User must be logged in */}
-            <Route
-              path="/checkout"
-              element={
-                <PrivateRoute>
-                  <CheckoutPage />
-                </PrivateRoute>
-              }
-            />
-
-            {/* ==================== ADMIN ==================== */}
-
-            {/* 
-              Admin area
-              Only authenticated users with role === "admin"
-              can access these pages.
-            */}
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminLayout />
-                </AdminRoute>
-              }
-            >
-              {/* /admin */}
-              <Route
-                index
-                element={<AdminDashboard />}
-              />
-
-              {/* /admin/produits */}
-              <Route
-                path="produits"
-                element={<AdminProducts />}
-              />
-
-              {/* /admin/commandes */}
-              <Route
-                path="commandes"
-                element={<AdminOrders />}
-              />
-
-              {/* /admin/utilisateurs */}
-              <Route
-                path="utilisateurs"
-                element={<AdminUsers />}
-              />
-            </Route>
-          </Routes>
-
-          {/* Footer */}
-          <Footer />
-
-        </PanierProvider>
+        <Footer />
+      </PanierProvider>
       </AuthProvider>
     </BrowserRouter>
   );
 }
 
 export default App;
-
