@@ -11,6 +11,12 @@ import Connexion from "./connection";
 import Signup from "./Signup";
 import CheckoutPage from "./CheckoutPage";
 import PrivateRoute from "./PrivateRoute";
+import AdminRoute from "./AdminRoute";
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/AdminDashboard";
+import AdminProducts from "./admin/AdminProducts";
+import AdminOrders from "./admin/AdminOrders";
+import AdminUsers from "./admin/AdminUsers";
 import { AuthProvider } from "./AuthContext";
 import "bootstrap-icons/font/bootstrap-icons.css";
 function App() {
@@ -48,6 +54,21 @@ function App() {
               </PrivateRoute>
             }
           />
+
+          {/* Espace admin : protégé, réservé au rôle "admin" */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="produits" element={<AdminProducts />} />
+            <Route path="commandes" element={<AdminOrders />} />
+            <Route path="utilisateurs" element={<AdminUsers />} />
+          </Route>
         </Routes>
 
         <Footer />

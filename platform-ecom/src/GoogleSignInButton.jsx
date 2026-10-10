@@ -1,81 +1,67 @@
+import { useEffect, useRef } from 'react'
 
-import { useEffect, useRef } from "react";
+const ADRESSE_SCRIPT = 'https://accounts.google.com/gsi/client'
 
-const ADRESSE_SCRIPT = "https://accounts.google.com/gsi/client";
+function GoogleSignInButton(props) {
+  const conteneur = useRef(null)
+  const dernierCallback = useRef(props.onCredential)
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+console.log("Google Client ID:", clientId)
+  dernierCallback.current = props.onCredential
 
-function GoogleSignInButton({ onCredential }) {
-  const conteneur = useRef(null);
-  const dernierCallback = useRef(onCredential);
+  useEffect(
+    function () {
+      if (!clientId) return
 
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      function afficherLeBouton() {
+        if (!window.google || !conteneur.current) return
 
-  useEffect(() => {
-    dernierCallback.current = onCredential;
-  }, [onCredential]);
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: function (reponse) {
+            dernierCallback.current(reponse.credential)
+          },
+        })
 
-  useEffect(() => {
-    if (!clientId) return;
+        window.google.accounts.id.renderButton(conteneur.current, {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          width: 320,
+        })
+      }
 
-    const afficherLeBouton = () => {
-      if (!window.google || !conteneur.current) return;
+      if (window.google) {
+        afficherLeBouton()
+        return
+      }
 
-      // Avoid rendering the button multiple times
-      conteneur.current.innerHTML = "";
+      let script = document.querySelector('script[src="' + ADRESSE_SCRIPT + '"]')
+      if (!script) {
+        script = document.createElement('script')
+        script.src = ADRESSE_SCRIPT
+        script.async = true
+        document.head.appendChild(script)
+      }
 
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: (reponse) => {
-          dernierCallback.current?.(reponse.credential);
-        },
-      });
+      script.addEventListener('load', afficherLeBouton)
 
-      window.google.accounts.id.renderButton(conteneur.current, {
-        theme: "outline",
-        size: "large",
-        text: "continue_with",
-        width: 320,
-      });
-    };
-
-    if (window.google) {
-      afficherLeBouton();
-      return;
-    }
-
-    let script = document.querySelector(
-      `script[src="${ADRESSE_SCRIPT}"]`
-    );
-
-    if (!script) {
-      script = document.createElement("script");
-      script.src = ADRESSE_SCRIPT;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-
-    script.addEventListener("load", afficherLeBouton);
-
-    return () => {
-      script.removeEventListener("load", afficherLeBouton);
-    };
-  }, [clientId]);
+      return function () {
+        script.removeEventListener('load', afficherLeBouton)
+      }
+    },
+    [clientId]
+  )
 
   if (!clientId) {
     return (
       <p className="text-muted small text-center mb-0">
-        Connexion Google non configurée.
+        Connexion Google non configurée (variable VITE_GOOGLE_CLIENT_ID manquante).
       </p>
-    );
+    )
   }
 
-  return (
-    <div
-      ref={conteneur}
-      className="d-flex justify-content-center"
-    />
-  );
+  return <div ref={conteneur} className="d-flex justify-content-center"></div>
 }
 
-export default GoogleSignInButton;
-
+export default GoogleSignInButton

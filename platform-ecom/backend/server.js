@@ -6,10 +6,12 @@ import dotenv from 'dotenv'
 import productRoutes from './routes/products.js'
 import authRoutes from './routes/auth.js'
 import orderRoutes from './routes/orders.js'
+import uploadRoutes from './routes/upload.js'
+import adminUsersRoutes from './routes/adminUsers.js'
+import adminStatsRoutes from './routes/adminStats.js'
 
 dotenv.config()
 
-// Sans phrase secrète, on ne démarre pas : mieux vaut planter que d'être vulnérable
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET manquant dans le fichier .env')
 }
@@ -25,8 +27,6 @@ mongoose.connect(process.env.MONGODB_URI)
 
 const app = express()
 
-// Qui a le droit d'appeler l'API depuis un navigateur ?
-// En local : Vite (port 5173). En ligne : l'adresse de ton site (variable FRONTEND_URL).
 const origines = ['http://localhost:5173', process.env.FRONTEND_URL].filter(Boolean)
 app.use(cors({ origin: origines }))
 app.use(express.json())
@@ -34,6 +34,12 @@ app.use(express.json())
 app.use('/api/products', productRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/orders', orderRoutes)
+app.use('/api/upload', uploadRoutes)
+app.use('/api/admin/users', adminUsersRoutes)
+app.use('/api/admin/stats', adminStatsRoutes)
+
+// Les images envoyées en local (sans Cloudinary) sont servies depuis ce dossier
+app.use('/uploads', express.static('uploads'))
 
 app.get('/', function (req, res) {
   res.json({ message: 'API DZECORM en ligne' })

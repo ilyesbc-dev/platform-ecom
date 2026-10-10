@@ -2,7 +2,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import Order from '../models/Order.js'
 import Product from '../models/Product.js'
-import { protect } from '../middleware/auth.js'
+import { protect, isAdmin } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -18,9 +18,6 @@ router.post('/', protect, async function (req, res) {
       return res.status(400).json({ message: 'Téléphone, wilaya et adresse obligatoires' })
     }
 
-    // Le navigateur envoie SEULEMENT { produit: _id, quantite }.
-    // Les PRIX, on va les chercher NOUS-MÊMES dans la base : on ne fait jamais
-    // confiance à ce qui vient du réseau (le prix pourrait être modifié dans F12).
     const ids = articles.map(function (a) {
       return String(a.produit)
     })
@@ -62,7 +59,6 @@ router.post('/', protect, async function (req, res) {
       adresse: adresse,
     })
 
-    // On retire les articles vendus du stock
     for (const ligne of lignes) {
       await Product.updateOne({ _id: ligne.produit }, { $inc: { stock: -ligne.quantite } })
     }
@@ -78,6 +74,40 @@ router.get('/my', protect, async function (req, res) {
   try {
     const commandes = await Order.find({ user: req.user._id }).sort({ createdAt: -1 })
     res.json(commandes)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// TOUTES LES COMMANDES  →  GET /api/orders   (admin)
+router.get('/', protect, isAdmin, async function (req, res) {
+  try {
+    const commandes = await Order.find().sort({ createdAt: -1 })
+    res.json(commandes)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// CHANGER LE STATUT D'UNE COMMANDE  →  PATCH /api/orders/:id/statut   (admin)
+const STATUTS_VALIDES = ['En attente', 'Expédiée', 'Livrée', 'Annulée']
+
+router.patch('/:id/statut', protect, isAdmin, async function (req, res) {
+  try {
+    const { statut } = req.body
+
+    if (!STATUTS_VALIDES.includes(statut)) {
+      return res.status(400).json({ message: 'Statut invalide' })
+    }
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Commande introuvable' })
+    }
+
+    const commande = await Order.findByIdAndUpdate(req.params.id, { statut: statut }, { returnDocument: 'after' })
+    if (!commande) {
+      return res.status(404).json({ message: 'Commande introuvable' })
+    }
+    res.json(commande)
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
