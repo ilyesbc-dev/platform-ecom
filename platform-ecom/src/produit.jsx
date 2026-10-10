@@ -7,11 +7,15 @@ import { apiFetch, lireJson } from "./api";
 function Produits() {
   const [produits, setProduits] = useState([]);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState("");
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const rechercheURL = searchParams.get("search") || "";
-  const pageURL = Number(searchParams.get("page")) || 1;
+  const pageURL = Math.max(
+    1,
+    Number.parseInt(searchParams.get("page"), 10) || 1
+  );
 
   const [recherche, setRecherche] = useState(rechercheURL);
   const [page, setPage] = useState(pageURL);
@@ -20,20 +24,36 @@ function Produits() {
 
   // Récupérer les produits depuis le backend
   useEffect(() => {
+    let actif = true;
+
     apiFetch("/api/products")
       .then(lireJson)
       .then((data) => {
-        setProduits(data);
+        if (actif) {
+          setProduits(Array.isArray(data) ? data : []);
+          setErreur("");
+        }
       })
       .catch((err) => {
-        console.error("Erreur:", err);
+        console.error("Erreur lors du chargement des produits :", err);
+
+        if (actif) {
+          setProduits([]);
+          setErreur("Impossible de charger les produits. Réessayez plus tard.");
+        }
       })
       .finally(() => {
-        setChargement(false);
+        if (actif) {
+          setChargement(false);
+        }
       });
+
+    return () => {
+      actif = false;
+    };
   }, []);
 
-  // Synchroniser avec l'URL
+  // Synchroniser la recherche et la page avec l'URL
   useEffect(() => {
     setRecherche(rechercheURL);
     setPage(pageURL);
@@ -44,186 +64,263 @@ function Produits() {
     e.preventDefault();
 
     const terme = recherche.trim();
+    const nouveauxParams = new URLSearchParams();
 
     if (terme) {
-      setSearchParams({
-        search: terme,
-        page: "1",
-      });
-    } else {
-      setSearchParams({
-        page: "1",
-      });
+      nouveauxParams.set("search", terme);
     }
+
+    nouveauxParams.set("page", "1");
+    setSearchParams(nouveauxParams);
   }
 
   // Filtrer les produits
-  const produitsFiltres = produits.filter((produit) => {
-    const terme = recherche.toLowerCase().trim();
+  const terme = recherche.trim().toLocaleLowerCase();
 
-    // Pas de filtre avant 3 caractères
+  const produitsFiltres = produits.filter((produit) => {
+    // Afficher tous les produits si le terme est trop court
     if (terme.length < 3) {
       return true;
     }
 
     return (
-      produit.nom?.toLowerCase().includes(terme) ||
-      produit.description?.toLowerCase().includes(terme) ||
-      produit.categorie?.toLowerCase().includes(terme)
+      produit.nom?.toLocaleLowerCase().includes(terme) ||
+      produit.description?.toLocaleLowerCase().includes(terme) ||
+      produit.categorie?.toLocaleLowerCase().includes(terme)
     );
   });
 
-  // Nombre total de pages
+  // Pagination
   const totalPages = Math.ceil(
     produitsFiltres.length / produitsParPage
   );
 
-  // Éviter une page invalide
   const pageActuelle =
     totalPages > 0 ? Math.min(page, totalPages) : 1;
 
-  // Produits de la page actuelle
   const indexDebut = (pageActuelle - 1) * produitsParPage;
-  const indexFin = indexDebut + produitsParPage;
-
   const produitsAffiches = produitsFiltres.slice(
     indexDebut,
-    indexFin
+    indexDebut + produitsParPage
   );
 
-  // Changer de page
+  // Changer de page en conservant la recherche dans l'URL
   function allerPage(numeroPage) {
-    setSearchParams({
-      ...(recherche ? { search: recherche } : {}),
-      page: numeroPage.toString(),
-    });
+    const nouvellePage = Math.max(
+      1,
+      Math.min(numeroPage, totalPages)
+    );
+
+    const nouveauxParams = new URLSearchParams();
+
+    if (recherche.trim()) {
+      nouveauxParams.set("search", recherche.trim());
+    }
+
+    nouveauxParams.set("page", nouvellePage.toString());
+    setSearchParams(nouveauxParams);
+  }
+
+  function effacerRecherche() {
+    setRecherche("");
+    setSearchParams({ page: "1" });
   }
 
   return (
-    <div className="container mt-5 pt-5">
+    <main className="dz-page-container dz-products-page">
+      <section className="dz-products-heading">
+        <div>
+          <span className="dz-eyebrow">LA BOUTIQUE DZECORM</span>
 
-      <h1 className="text-center mb-4">
-        Nos Produits
-      </h1>
+          <h1>Nos produits<span>.</span></h1>
 
-      {/* SEARCH BAR */}
+          <p>
+            Trouvez les produits qui vous correspondent,
+            en quelques clics.
+          </p>
+        </div>
+
+        {!chargement && !erreur && (
+          <div className="dz-products-count">
+            <strong>{produitsFiltres.length}</strong>
+            <span>
+              {produitsFiltres.length > 1
+                ? "produits disponibles"
+                : "produit disponible"}
+            </span>
+          </div>
+        )}
+      </section>
+
       <form
         onSubmit={chercher}
-        className="mx-auto mb-5"
-        style={{ maxWidth: "600px" }}
+        className="dz-products-search"
+        role="search"
       >
-        <div className="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
+        <span className="dz-search-icon" aria-hidden="true">
+          <i className="bi bi-search" />
+        </span>
 
-          <span className="input-group-text bg-white border-0 ps-4">
-            <i className="bi bi-search text-primary"></i>
-          </span>
+        <input
+          type="search"
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          placeholder="Rechercher un produit, une catégorie..."
+          aria-label="Rechercher un produit"
+        />
 
-          <input
-            type="text"
-            className="form-control bg-white border-0"
-            placeholder="Rechercher un produit..."
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-          />
-
+        {recherche && (
           <button
-            type="submit"
-            className="btn btn-primary px-4"
+            type="button"
+            className="dz-search-clear"
+            onClick={effacerRecherche}
+            aria-label="Effacer la recherche"
           >
-            Rechercher
+            <i className="bi bi-x-lg" />
           </button>
+        )}
 
-        </div>
+        <button type="submit" className="dz-search-submit">
+          Rechercher
+        </button>
       </form>
 
-      {/* LOADING */}
-      {chargement && (
-        <p className="text-center text-secondary">
-          Chargement...
+      {terme.length > 0 && terme.length < 3 && (
+        <p className="dz-search-hint">
+          Saisissez au moins 3 caractères pour filtrer les résultats.
         </p>
       )}
 
-      {/* NO RESULTS */}
-      {!chargement && produitsFiltres.length === 0 && (
-        <div className="text-center py-5">
-          <i className="bi bi-search fs-1 text-secondary"></i>
+      {chargement && (
+        <div className="dz-products-loading">
+          <div className="dz-spinner" aria-label="Chargement" />
+          <p>Chargement des produits...</p>
+        </div>
+      )}
 
-          <h4 className="mt-3">
-            Aucun produit trouvé
-          </h4>
+      {!chargement && erreur && (
+        <div className="dz-products-message dz-products-error">
+          <i className="bi bi-exclamation-circle" aria-hidden="true" />
+          <h2>Oups, une erreur est survenue</h2>
+          <p>{erreur}</p>
 
-          <p className="text-secondary">
-            Aucun résultat pour "{recherche}"
+          <button
+            type="button"
+            className="dz-button dz-button-primary"
+            onClick={() => window.location.reload()}
+          >
+            Réessayer
+          </button>
+        </div>
+      )}
+
+      {!chargement && !erreur && produitsFiltres.length === 0 && (
+        <div className="dz-products-message">
+          <div className="dz-products-empty-icon">
+            <i className="bi bi-search" aria-hidden="true" />
+          </div>
+
+          <h2>Aucun produit trouvé</h2>
+
+          <p>
+            {terme.length >= 3
+              ? `Aucun résultat pour « ${recherche.trim()} ».`
+              : "Aucun produit n'est disponible pour le moment."}
           </p>
-        </div>
-      )}
 
-      {/* PRODUCTS */}
-      {!chargement && produitsFiltres.length > 0 && (
-        <div className="row">
-
-          {produitsAffiches.map((produit) => (
-            <div
-              className="col-md-6 col-lg-6 mb-4"
-              key={produit._id}
-            >
-              <Card produit={produit} />
-            </div>
-          ))}
-
-        </div>
-      )}
-
-      {/* PAGINATION */}
-      {!chargement && totalPages > 1 && (
-        <div className="d-flex justify-content-center align-items-center gap-2 mt-4 mb-5">
-
-          {/* PREVIOUS */}
-          <button
-            className="btn btn-outline-primary rounded-pill px-4"
-            disabled={pageActuelle === 1}
-            onClick={() => allerPage(pageActuelle - 1)}
-          >
-            <i className="bi bi-arrow-left me-2"></i>
-            Previous
-          </button>
-
-          {/* PAGE NUMBERS */}
-          {Array.from(
-            { length: totalPages },
-            (_, index) => index + 1
-          ).map((numeroPage) => (
+          {recherche && (
             <button
-              key={numeroPage}
-              className={
-                pageActuelle === numeroPage
-                  ? "btn btn-primary rounded-circle"
-                  : "btn btn-outline-primary rounded-circle"
-              }
-              style={{
-                width: "42px",
-                height: "42px",
-              }}
-              onClick={() => allerPage(numeroPage)}
+              type="button"
+              className="dz-button dz-button-secondary"
+              onClick={effacerRecherche}
             >
-              {numeroPage}
+              Voir tous les produits
             </button>
-          ))}
-
-          {/* NEXT */}
-          <button
-            className="btn btn-outline-primary rounded-pill px-4"
-            disabled={pageActuelle === totalPages}
-            onClick={() => allerPage(pageActuelle + 1)}
-          >
-            Next
-            <i className="bi bi-arrow-right ms-2"></i>
-          </button>
-
+          )}
         </div>
       )}
 
-    </div>
+      {!chargement && !erreur && produitsFiltres.length > 0 && (
+        <>
+          <div className="dz-products-results">
+            <p>
+              {terme.length >= 3
+                ? `Résultats pour « ${recherche.trim()} »`
+                : "Découvrez notre sélection"}
+            </p>
+
+            {totalPages > 1 && (
+              <span>
+                Page {pageActuelle} sur {totalPages}
+              </span>
+            )}
+          </div>
+
+          <div className="row g-4 dz-products-grid">
+            {produitsAffiches.map((produit) => (
+              <div
+                className="col-12 col-sm-6 col-xl-3"
+                key={produit._id}
+              >
+                <Card produit={produit} />
+              </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <nav
+              className="dz-pagination"
+              aria-label="Pagination des produits"
+            >
+              <button
+                type="button"
+                className="dz-page-arrow"
+                disabled={pageActuelle === 1}
+                onClick={() => allerPage(pageActuelle - 1)}
+                aria-label="Page précédente"
+              >
+                <i className="bi bi-arrow-left" />
+                <span>Précédent</span>
+              </button>
+
+              <div className="dz-page-numbers">
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1
+                ).map((numeroPage) => (
+                  <button
+                    type="button"
+                    key={numeroPage}
+                    className={
+                      pageActuelle === numeroPage
+                        ? "dz-page-number active"
+                        : "dz-page-number"
+                    }
+                    aria-current={
+                      pageActuelle === numeroPage ? "page" : undefined
+                    }
+                    onClick={() => allerPage(numeroPage)}
+                  >
+                    {numeroPage}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="dz-page-arrow"
+                disabled={pageActuelle === totalPages}
+                onClick={() => allerPage(pageActuelle + 1)}
+                aria-label="Page suivante"
+              >
+                <span>Suivant</span>
+                <i className="bi bi-arrow-right" />
+              </button>
+            </nav>
+          )}
+        </>
+      )}
+    </main>
   );
 }
 

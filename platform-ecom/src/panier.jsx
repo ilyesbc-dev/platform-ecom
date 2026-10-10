@@ -1,10 +1,10 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const PanierContext = createContext();
 
 export function PanierProvider({ children }) {
-  // Au démarrage, on relit le panier sauvegardé
   const [panier, setPanier] = useState(() => {
     try {
       const sauvegarde = localStorage.getItem("panier");
@@ -14,9 +14,12 @@ export function PanierProvider({ children }) {
     }
   });
 
-  // À chaque changement du panier, on le sauvegarde
   useEffect(() => {
-    localStorage.setItem("panier", JSON.stringify(panier));
+    try {
+      localStorage.setItem("panier", JSON.stringify(panier));
+    } catch (err) {
+      console.error("Impossible de sauvegarder le panier :", err);
+    }
   }, [panier]);
 
   function ajouterAuPanier(produit) {
@@ -33,13 +36,7 @@ export function PanierProvider({ children }) {
         );
       }
 
-      return [
-        ...panierActuel,
-        {
-          ...produit,
-          quantite: 1,
-        },
-      ];
+      return [...panierActuel, { ...produit, quantite: 1 }];
     });
   }
 
@@ -70,13 +67,12 @@ export function PanierProvider({ children }) {
 
   const total = panier.reduce(
     (somme, produit) =>
-      somme + produit.prix * produit.quantite,
+      somme + Number(produit.prix || 0) * produit.quantite,
     0
   );
 
   const nombreProduits = panier.reduce(
-    (somme, produit) =>
-      somme + produit.quantite,
+    (somme, produit) => somme + produit.quantite,
     0
   );
 
@@ -110,119 +106,164 @@ export default function Panier() {
     total,
   } = usePanier();
 
+  const formatPrix = (prix) =>
+    Number(prix || 0).toLocaleString("fr-DZ") + " DA";
+
   return (
-    <div className="container mt-5 pt-5">
-      <h1 className="mb-4">Mon panier</h1>
+    <main className="dz-page-container dz-cart-page">
+      <div className="dz-cart-heading">
+        <div>
+          <span className="dz-eyebrow">VOTRE SÉLECTION</span>
+          <h1>Mon panier</h1>
+          <p>Retrouvez ici les produits que vous souhaitez commander.</p>
+        </div>
+
+        <Link to="/produits" className="dz-button dz-button-secondary">
+          ← Continuer mes achats
+        </Link>
+      </div>
 
       {panier.length === 0 ? (
-        <p className="text-secondary">
-          Votre panier est vide.
-        </p>
+        <section className="dz-cart-empty">
+          <div className="dz-cart-empty-icon">
+            <span aria-hidden="true">🛍</span>
+          </div>
+          <h2>Votre panier est vide</h2>
+          <p>Votre prochain coup de cœur vous attend dans notre boutique.</p>
+
+          <Link to="/produits" className="dz-button dz-button-primary">
+            Découvrir les produits
+          </Link>
+        </section>
       ) : (
-        <>
-          {panier.map((produit) => (
-            <div
-              key={produit._id}
-              className="card mb-3 shadow-sm"
-            >
-              <div className="card-body">
-                <div className="row align-items-center">
+        <div className="dz-cart-layout">
+          <section className="dz-cart-items">
+            {panier.map((produit) => (
+              <article className="dz-cart-item" key={produit._id}>
+                <Link
+                  to={`/produit/${produit._id}`}
+                  className="dz-cart-image-wrap"
+                  aria-label={`Voir ${produit.nom}`}
+                >
+                  <img
+                    src={produit.image}
+                    alt={produit.nom}
+                    className="dz-cart-image"
+                  />
+                </Link>
 
-                  <div className="col-md-2">
-                    <img
-                      src={produit.image}
-                      alt={produit.nom}
-                      className="img-fluid"
-                      style={{
-                        height: "100px",
-                        width: "100%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  </div>
+                <div className="dz-cart-product-info">
+                  {produit.categorie && (
+                    <span className="dz-cart-category">
+                      {produit.categorie}
+                    </span>
+                  )}
 
-                  <div className="col-md-3">
-                    <h5>{produit.nom}</h5>
-                    <p className="text-secondary mb-0">
-                      {produit.prix} DA
-                    </p>
-                  </div>
+                  <Link
+                    to={`/produit/${produit._id}`}
+                    className="dz-cart-product-name"
+                  >
+                    {produit.nom}
+                  </Link>
 
-                  <div className="col-md-3">
-                    <div className="d-flex align-items-center gap-2">
-                      <button
-                        className="btn btn-outline-secondary"
-                        onClick={() =>
-                          modifierQuantite(
-                            produit._id,
-                            produit.quantite - 1
-                          )
-                        }
-                      >
-                        -
-                      </button>
+                  <p className="dz-cart-unit-price">
+                    {formatPrix(produit.prix)} / unité
+                  </p>
 
-                      <span>
-                        {produit.quantite}
-                      </span>
+                  <button
+                    type="button"
+                    className="dz-remove-link"
+                    onClick={() => supprimerProduit(produit._id)}
+                  >
+                    Supprimer
+                  </button>
+                </div>
 
-                      <button
-                        className="btn btn-outline-secondary"
-                        onClick={() =>
-                          modifierQuantite(
-                            produit._id,
-                            produit.quantite + 1
-                          )
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="col-md-2">
-                    <strong>
-                      {produit.prix * produit.quantite} DA
-                    </strong>
-                  </div>
-
-                  <div className="col-md-2">
+                <div className="dz-cart-item-end">
+                  <div className="dz-quantity-control">
                     <button
-                      className="btn btn-danger"
+                      type="button"
+                      aria-label={`Diminuer la quantité de ${produit.nom}`}
                       onClick={() =>
-                        supprimerProduit(produit._id)
+                        modifierQuantite(
+                          produit._id,
+                          produit.quantite - 1
+                        )
                       }
                     >
-                      Supprimer
+                      −
+                    </button>
+
+                    <span aria-label={`Quantité : ${produit.quantite}`}>
+                      {produit.quantite}
+                    </span>
+
+                    <button
+                      type="button"
+                      aria-label={`Augmenter la quantité de ${produit.nom}`}
+                      onClick={() =>
+                        modifierQuantite(
+                          produit._id,
+                          produit.quantite + 1
+                        )
+                      }
+                    >
+                      +
                     </button>
                   </div>
 
+                  <strong className="dz-cart-line-total">
+                    {formatPrix(Number(produit.prix || 0) * produit.quantite)}
+                  </strong>
                 </div>
-              </div>
-            </div>
-          ))}
+              </article>
+            ))}
 
-          <div className="d-flex justify-content-between align-items-center mt-4">
             <button
-              className="btn btn-outline-danger"
+              type="button"
+              className="dz-clear-cart"
               onClick={viderPanier}
             >
               Vider le panier
             </button>
+          </section>
 
-            <h3>
-              Total : {total} DA
-            </h3>
-          </div>
+          <aside className="dz-cart-summary">
+            <h2>Résumé de la commande</h2>
 
-          <Link
-            className="btn btn-success w-100 mt-3"
-            to="/checkout"
-          >
-            Passer la commande
-          </Link>
-        </>
+            <div className="dz-summary-row">
+              <span>Sous-total</span>
+              <strong>{formatPrix(total)}</strong>
+            </div>
+
+            <div className="dz-summary-row">
+              <span>Livraison</span>
+              <span>À confirmer</span>
+            </div>
+
+            <div className="dz-summary-total">
+              <span>Total des produits</span>
+              <strong>{formatPrix(total)}</strong>
+            </div>
+
+            <p className="dz-summary-note">
+              Les frais de livraison seront confirmés lors de la commande.
+            </p>
+
+            <Link
+              className="dz-button dz-button-primary dz-checkout-button"
+              to="/checkout"
+            >
+              Passer la commande <span aria-hidden="true">→</span>
+            </Link>
+
+            <div className="dz-secure-note">
+              <span aria-hidden="true">✓</span>
+              Vérifiez vos informations avant de confirmer.
+            </div>
+          </aside>
+        </div>
       )}
-    </div>
+    </main>
   );
 }

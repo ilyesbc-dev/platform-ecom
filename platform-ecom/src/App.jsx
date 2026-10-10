@@ -17,6 +17,7 @@ import AdminDashboard from "./admin/AdminDashboard";
 import AdminProducts from "./admin/AdminProducts";
 import AdminOrders from "./admin/AdminOrders";
 import AdminUsers from "./admin/AdminUsers";
+import "./styles/premium.css";
 import { AuthProvider } from "./AuthContext";
 import "bootstrap-icons/font/bootstrap-icons.css";
 function App() {
